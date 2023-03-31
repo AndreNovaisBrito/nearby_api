@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { multerConfig } from "./config/multer";
+const path = require("path");
 
 const Pool = require("pg").Pool;
 require("dotenv").config();
@@ -171,6 +172,25 @@ const createImage = (request: Request, response: Response): void => {
   );
 };
 
+const getImageFromPlaceId = (request: Request, response: Response): void => {
+  const placeId = parseInt(request.params.placeId);
+  pool.query(
+    "SELECT * FROM image_files WHERE place_id = $1",
+    [placeId],
+    (error: Error, results: any) => {
+      if (error) {
+        throw error;
+      }
+      const image = results.rows[0];
+
+      if (image) {
+        return response.type(image.mimetype).sendFile(image.filepath);
+      }
+      return response.json({error: "Image does not exist"});
+    }
+  );
+};
+
 export default module.exports = {
   getPlaces,
   getPlacesById,
@@ -178,4 +198,5 @@ export default module.exports = {
   deletePlace,
   updatePlace,
   createImage,
+  getImageFromPlaceId,
 };
