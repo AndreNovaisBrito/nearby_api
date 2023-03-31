@@ -13,6 +13,9 @@ const pool = new Pool({
   port: process.env.PORT,
 });
 
+//==========================Places====================================
+
+
 const getPlaces = (request: Request, response: Response): void => {
   pool.query(
     "SELECT * FROM places ORDER BY id ASC",
@@ -131,8 +134,10 @@ const updatePlace = (request: Request, response: Response): void => {
   }
 };
 
+//========================Images========================================
+
 const createImage = (request: Request, response: Response): void => {
-  console.log(request.file);
+  console.log( request.file);
   const filename = request.file!.filename;
   const filepath = request.file!.path;
   const mimetype = request.file!.mimetype;
@@ -191,6 +196,62 @@ const getImageFromPlaceId = (request: Request, response: Response): void => {
   );
 };
 
+const deleteImageFromPlaceId = (request: Request, response: Response): void => {
+  const placeId = parseInt(request.params.placeId);
+  pool.query(
+    "DELETE FROM image_files WHERE place_id = $1",
+    [placeId],
+    (error: Error, results: any): void => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).send({ placeId: placeId });
+    }
+  );
+};
+
+const updateImageFromPlaceId = (request: Request, response: Response): void => {
+  console.log('request.file', request.file);
+  const filename = request.file!.filename;
+  const filepath = request.file!.path;
+  const mimetype = request.file!.mimetype;
+  const size = request.file!.size;
+  const placeId = parseInt(request.params.placeId);
+
+  console.log(filename, filepath, mimetype, size, placeId);
+
+  // Check if a row with the given place_id already exists
+  pool.query(
+    "SELECT id FROM image_files WHERE place_id = $1",
+    [placeId],
+    (error: Error, results: any) => {
+      if (error) {
+        throw error;
+      }
+
+      // If a row with the given place_id already exists, return an error
+      if (results.rows.length == 0) {
+        response.status(400).send({
+          error: "An image for this place does not exist",
+        });
+      
+      } else {
+        // Otherwise, update the new row into the image_files table
+        pool.query(
+          "UPDATE image_files SET filename = $1, filepath = $2, mimetype = $3, size = $4 WHERE place_id = $5 RETURNING *",
+          [filename, filepath, mimetype, size, placeId],
+          (error: Error, results: any) => {
+            if (error) {
+              throw error;
+            }
+            response.status(201).send(results.rows[0]);
+          }
+        );
+      }
+    }
+  );
+};
+
 export default module.exports = {
   getPlaces,
   getPlacesById,
@@ -199,4 +260,6 @@ export default module.exports = {
   updatePlace,
   createImage,
   getImageFromPlaceId,
+  deleteImageFromPlaceId,
+  updateImageFromPlaceId,
 };
