@@ -49,10 +49,8 @@ app.get('/places', db.getPlaces)
 app.get('/places/:id', db.getPlacesById)
 app.post('/places', db.createPlace)
 app.delete('/places/:id', db.deletePlace)
-app.put('/places/:id/en', db.updateEnglishPlace)
-app.put('/places/:id/pt', db.updatePortuguesePlace)
-app.put('/places/:id/fr', db.updateFrenchPlace)
-app.put('/places/:id/es', db.updateSpanishPlace)
+app.put('/places/:id/:language', db.updatePlace)
+
 
 
 
