@@ -1,8 +1,13 @@
-import express, { Request, Response } from "express";
+import express, { Router, Request, Response } from "express";
 const morgan = require("morgan");
 import db from "./queries";
 const port = 5000;
-import routes from "./routes";
+// import routes from "./routes";
+const multer = require("multer");
+const routes = Router();
+
+import { multerConfig } from './config/multer'
+
 
 
 // // Create multer object
@@ -19,7 +24,7 @@ app.use(express.json());
 
 //Routes
 //=========================Image Routes=========================================
-
+routes.post('/upload/:placeId', multer(multerConfig).single('file'), db.createImage);
 
 
 // ========================Title Routes=========================================

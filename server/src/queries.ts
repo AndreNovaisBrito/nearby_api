@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import { multerConfig } from "./config/multer";
 
 const Pool = require("pg").Pool;
 require("dotenv").config();
@@ -129,10 +130,52 @@ const updatePlace = (request: Request, response: Response): void => {
   }
 };
 
+const createImage = (request: Request, response: Response): void => {
+  console.log(request.file);
+  const filename = request.file!.filename;
+  const filepath = request.file!.path;
+  const mimetype = request.file!.mimetype;
+  const size = request.file!.size;
+  const placeId = parseInt(request.params.placeId);
+
+  console.log(filename, filepath, mimetype, size, placeId);
+
+  // Check if a row with the given place_id already exists
+  pool.query(
+    "SELECT id FROM image_files WHERE place_id = $1",
+    [placeId],
+    (error: Error, results: any) => {
+      if (error) {
+        throw error;
+      }
+
+      // If a row with the given place_id already exists, return an error
+      if (results.rows.length > 0) {
+        response.status(400).send({
+          error: "An image for this place already exists",
+        });
+      } else {
+        // Otherwise, insert the new row into the image_files table
+        pool.query(
+          "INSERT INTO image_files (filename, filepath, mimetype, size, place_id) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+          [filename, filepath, mimetype, size, placeId],
+          (error: Error, results: any) => {
+            if (error) {
+              throw error;
+            }
+            response.status(201).send(results.rows[0]);
+          }
+        );
+      }
+    }
+  );
+};
+
 export default module.exports = {
   getPlaces,
   getPlacesById,
   createPlace,
   deletePlace,
   updatePlace,
+  createImage,
 };
