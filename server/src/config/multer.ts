@@ -1,13 +1,15 @@
-import { request } from 'express'
+import { Request } from 'express'
 import { Options, diskStorage} from 'multer'
 import { resolve } from 'path'
 import { randomBytes } from 'crypto'
+
 export const multerConfig = {
     dest: resolve(__dirname, '..', '..', 'uploads'),
     storage: diskStorage({
         destination: (request, file, callback) =>{
             callback(null, resolve(__dirname, '..', '..', 'uploads'))
         },
+        
         filename:(request, file, callback)=>{
             randomBytes(16, (error, hash)=>{
                 if (error){

@@ -1,12 +1,10 @@
 import express, { Router, Request, Response } from "express";
-// const morgan = require("morgan");
 import db from "./queries";
 const port = 5000;
-const multer = require("multer");
+import multer from 'multer'
 import { multerConfig } from "./config/multer";
 const app = express();
 
-// app.use(morgan("dev"));
 app.use(express.json());
 
 //Routes

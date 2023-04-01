@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { multerConfig } from "./config/multer";
-const path = require("path");
-
+import path from 'path'
+import sharp from 'sharp';
 const Pool = require("pg").Pool;
 require("dotenv").config();
 
@@ -45,7 +45,7 @@ const getPlacesById = (request: Request, response: Response): void => {
 
 const createPlace = (request: Request, response: Response): void => {
   const place = request.body[0];
-
+  console.log(place)
   pool.query(
     "INSERT INTO places (en, pt, fr, es) VALUES ($1, $2, $3, $4) RETURNING *",
     [place.en, place.pt, place.fr, place.es],
@@ -144,7 +144,14 @@ const createImage = (request: Request, response: Response): void => {
   const size = request.file!.size;
   const placeId = parseInt(request.params.placeId);
 
-  console.log(filename, filepath, mimetype, size, placeId);
+  //===============Resize================
+
+  sharp(filepath)
+  .resize(500, 500)
+  .jpeg({quality: 90})
+  .toFile(`resized_images/resized_${filename}`)
+
+  //===============End of Resize ========
 
   // Check if a row with the given place_id already exists
   pool.query(
@@ -169,7 +176,19 @@ const createImage = (request: Request, response: Response): void => {
             if (error) {
               throw error;
             }
-            response.status(201).send(results.rows[0]);
+            
+            const imageId = results.rows[0].id;
+
+            // Update the image_id column in the places table
+            pool.query(
+              "UPDATE places SET image_id = $1 WHERE id = $2",
+              [imageId, placeId],
+              (error: Error, results: any) => {
+                if (error) {
+                  throw error;
+                }
+                response.status(201).send(results.rows[0]);
+              });
           }
         );
       }
@@ -218,7 +237,15 @@ const updateImageFromPlaceId = (request: Request, response: Response): void => {
   const size = request.file!.size;
   const placeId = parseInt(request.params.placeId);
 
-  console.log(filename, filepath, mimetype, size, placeId);
+  //===============Resize================
+
+  sharp(filepath)
+  .resize(500, 500)
+  .jpeg({quality: 90})
+  .toFile(`resized_images/resized_${filename}`)
+
+  //===============End of Resize ========
+
 
   // Check if a row with the given place_id already exists
   pool.query(
