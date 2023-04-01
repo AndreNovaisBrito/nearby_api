@@ -227,6 +227,26 @@ const getImageFromPlaceId = (request: Request, response: Response): void => {
   );
 };
 
+const getResizedImageFromPlaceId = (request: Request, response: Response): void => {
+  const placeId = parseInt(request.params.placeId);
+  pool.query(
+    "SELECT * FROM image_files WHERE place_id = $1",
+    [placeId],
+    (error: Error, results: any) => {
+      if (error) {
+        throw error;
+      }
+      const image = results.rows[0];
+      const resizedImagePath = image.filepath.replace('uploads\\', 'resized_images\\resized_');
+      if (image) {
+        return response.type(image.mimetype).sendFile(resizedImagePath);
+      }
+      return response.json({error: "Image does not exist"});
+    }
+  );
+};
+
+
 const deleteImageFromPlaceId = (request: Request, response: Response): void => {
   const placeId = parseInt(request.params.placeId);
   pool.query(
@@ -310,4 +330,5 @@ export default module.exports = {
   getImageFromPlaceId,
   deleteImageFromPlaceId,
   updateImageFromPlaceId,
+  getResizedImageFromPlaceId
 };

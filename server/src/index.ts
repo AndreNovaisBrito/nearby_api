@@ -20,6 +20,8 @@ app.put("/places/:id/:language", db.updatePlace);
 
 app.post("/upload/:placeId", multer(multerConfig).single("file"), db.createImage);
 app.get("/upload/:placeId", db.getImageFromPlaceId);
+app.get("/upload/:placeId/resized", db.getResizedImageFromPlaceId);
+
 app.delete("/upload/:placeId", db.deleteImageFromPlaceId);
 app.put("/upload/:placeId", multer(multerConfig).single("file"), db.updateImageFromPlaceId);
 
