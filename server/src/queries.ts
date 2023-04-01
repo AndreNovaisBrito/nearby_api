@@ -1,6 +1,4 @@
-import express, { Request, Response } from "express";
-import { multerConfig } from "./config/multer";
-import path from 'path'
+import { Request, Response } from "express";
 import sharp from 'sharp';
 const Pool = require("pg").Pool;
 require("dotenv").config();
